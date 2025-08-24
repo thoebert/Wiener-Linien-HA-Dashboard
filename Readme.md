@@ -168,7 +168,7 @@ As default, the number of visible departure times, `max_departures`, is limited 
 ### Internal Data Format
 
 The card displays departure data in this minimal format to stay under the 255-character limit of the variable values of the different Home-Assistant APIs:
-```json
+```
 {
   "d": [1,5,11,...], // Departure times in minutes
   "r": [1,1,0,...] // Departure is realtime (1) or scheduled (0)

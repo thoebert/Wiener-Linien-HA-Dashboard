@@ -1,0 +1,493 @@
+[
+    {
+        "id": "31005ffad19be55e",
+        "type": "tab",
+        "label": "Wiener Linien Monitor",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "808fecb45f43327c",
+        "type": "server-events",
+        "z": "31005ffad19be55e",
+        "name": "Watcher Changed",
+        "server": "12fbb049fa51dd5b",
+        "version": 3,
+        "exposeAsEntityConfig": "",
+        "eventType": "dashboard_watcher_changed",
+        "eventData": "",
+        "waitForRunning": true,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "$outputData(\"eventData\").event",
+                "valueType": "jsonata"
+            }
+        ],
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "0aa469aa4356fd0c"
+            ]
+        ]
+    },
+    {
+        "id": "0aa469aa4356fd0c",
+        "type": "function",
+        "z": "31005ffad19be55e",
+        "name": "Manage Watchers",
+        "func": "let watchers = global.get(\"watchers\") || {};\n\nlet payload = msg.payload;\nconst id = String(payload.watcherId);\n\nswitch (payload.action) {\n    case \"add_watcher\":\n        // Save only the current timestamp\n        watchers[id] = Date.now();\n        node.status({ fill: \"green\", shape: \"dot\", text: `Added watcher ${id}` });\n        console.log(`Added watcher ${id}`)\n        break;\n\n    case \"remove_watcher\":\n        console.log(`Removed watcher ${id}`)\n        if (watchers.hasOwnProperty(id)) {\n            delete watchers[id];\n            node.status({ fill: \"red\", shape: \"ring\", text: `Removed watcher ${id}` });\n        } else {\n            node.status({ fill: \"yellow\", shape: \"ring\", text: `Watcher ${id} not found` });\n        }\n        break;\n\n    default:\n        node.warn(\"Unknown action: \" + payload.action);\n        return null;\n}\n\nglobal.set(\"watchers\", watchers);\nglobal.set(\"age\", 2);\n\nreturn { payload: \"watcherChanged\" };\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 120,
+        "wires": [
+            [
+                "e89052ee77539c99"
+            ]
+        ]
+    },
+    {
+        "id": "9c22aa3e764d70fd",
+        "type": "delay",
+        "z": "31005ffad19be55e",
+        "name": "Rate Limit 30s",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "30",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 340,
+        "y": 200,
+        "wires": [
+            [
+                "bcab7f1b2a1e9cbc"
+            ]
+        ]
+    },
+    {
+        "id": "443075ed98a96a71",
+        "type": "delay",
+        "z": "31005ffad19be55e",
+        "name": "Delay 30s",
+        "pauseType": "delay",
+        "timeout": "30",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 740,
+        "y": 200,
+        "wires": [
+            [
+                "9c22aa3e764d70fd"
+            ]
+        ]
+    },
+    {
+        "id": "bcab7f1b2a1e9cbc",
+        "type": "function",
+        "z": "31005ffad19be55e",
+        "name": "Update?",
+        "func": "let watchers = global.get(\"watchers\") || {};\nconst now = Date.now();\nconst FIVE_MINUTES = 5 * 60 * 1000;\n\n// Remove watchers older than 5 minutes\nfor (let id in watchers) {\n    if ((now - watchers[id]) > FIVE_MINUTES) {\n        delete watchers[id];\n    }\n}\n\n// Update the global variable after cleaning\nglobal.set(\"watchers\", watchers);\n\n// If watchers still exist\nif (Object.keys(watchers).length > 0) {\n    return { payload: \"hasWatchers\" };\n}\n\n// No watchers, handle age logic\nlet age = global.get(\"age\") || 2;\nage = age - 1;\nglobal.set(\"age\", age);  // Save updated age\n\nif (age > 0) {\n    return { payload: \"noWatchers\" };\n} else {\n    return { payload: \"expiredData\" };\n}",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 200,
+        "wires": [
+            [
+                "ed4f73b53679dc1c"
+            ]
+        ]
+    },
+    {
+        "id": "ed4f73b53679dc1c",
+        "type": "switch",
+        "z": "31005ffad19be55e",
+        "name": "Decide",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "hasWatchers",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "noWatchers",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "expiredData",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 595,
+        "y": 200,
+        "wires": [
+            [
+                "443075ed98a96a71",
+                "17814bc16fa231ca"
+            ],
+            [
+                "443075ed98a96a71"
+            ],
+            [
+                "dcd4f088564d5842"
+            ]
+        ],
+        "l": false
+    },
+    {
+        "id": "a668c0556ea65cba",
+        "type": "change",
+        "z": "31005ffad19be55e",
+        "name": "Format for HA",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\t    \"target\": {\t        \"entity_id\": payload.entity_id\t    },\t    \"data\": {\t        \"value\": payload.value\t    }\t}",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 700,
+        "y": 320,
+        "wires": [
+            [
+                "13229ca492f272d9"
+            ]
+        ]
+    },
+    {
+        "id": "13229ca492f272d9",
+        "type": "api-call-service",
+        "z": "31005ffad19be55e",
+        "name": "Set Variables",
+        "server": "12fbb049fa51dd5b",
+        "version": 7,
+        "debugenabled": false,
+        "action": "input_text.set_value",
+        "floorId": [],
+        "areaId": [],
+        "deviceId": [],
+        "entityId": [],
+        "labelId": [],
+        "data": "",
+        "dataType": "jsonata",
+        "mergeContext": "",
+        "mustacheAltTags": false,
+        "outputProperties": [],
+        "queue": "none",
+        "blockInputOverrides": false,
+        "domain": "input_text",
+        "service": "set_value",
+        "x": 870,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8add5ee7273911ad",
+        "type": "ha-get-entities",
+        "z": "31005ffad19be55e",
+        "name": "Query all Monitor Entities",
+        "server": "12fbb049fa51dd5b",
+        "version": 1,
+        "rules": [
+            {
+                "condition": "state_object",
+                "property": "entity_id",
+                "logic": "starts_with",
+                "value": "input_text.monitor_",
+                "valueType": "str"
+            }
+        ],
+        "outputType": "array",
+        "outputEmptyResults": false,
+        "outputLocationType": "msg",
+        "outputLocation": "payload",
+        "outputResultsCount": 1,
+        "x": 330,
+        "y": 40,
+        "wires": [
+            [
+                "c76e072267343d1c"
+            ]
+        ]
+    },
+    {
+        "id": "c76e072267343d1c",
+        "type": "function",
+        "z": "31005ffad19be55e",
+        "name": "Save Entities",
+        "func": "let monitors = msg.payload.map(entity => entity.entity_id);\nglobal.set(\"monitors\", monitors);\n\n// Create a message for each monitor\nlet stopIds = monitors.map(monitorId => {\n    const stopId = monitorId.match(/\\d+/);\n    if (!stopId) return false\n    return parseInt(stopId[0]);\n}).filter(Number.isInteger)\nglobal.set(\"stopIds\", new Set(stopIds));",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "88d53924ea7cb700",
+        "type": "inject",
+        "z": "31005ffad19be55e",
+        "name": "On Startup",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 110,
+        "y": 40,
+        "wires": [
+            [
+                "8add5ee7273911ad"
+            ]
+        ]
+    },
+    {
+        "id": "ec3861c1147a3fcd",
+        "type": "function",
+        "z": "31005ffad19be55e",
+        "name": "Clear Outdated",
+        "func": "// Get the saved monitors from global context\nlet monitors = global.get(\"monitors\") || [];\n\n// Create a message for each monitor\nlet messages = monitors.map(monitorId => {\n    return {\n        payload: {\n            entity_id: monitorId,\n            value: \"\"\n        }\n    };\n});\n\n// Return the array of messages\nreturn [messages];",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 360,
+        "wires": [
+            [
+                "a668c0556ea65cba"
+            ]
+        ]
+    },
+    {
+        "id": "8940d8223070d0f3",
+        "type": "function",
+        "z": "31005ffad19be55e",
+        "name": "Gen URL",
+        "func": "// Get the saved monitors from global context\nlet stopIds = global.get(\"stopIds\") || new Set();\nif (stopIds.length == 0) return\nlet stopParam = [...stopIds].map(stopId =>\n    `stopId=${stopId}&`\n).join(\"\")\nlet url = `https://www.wienerlinien.at/ogd_realtime/monitor?${stopParam}activateTrafficInfo=stoerungkurz&activateTrafficInfo=stoerunglang`\nreturn { url: url };",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 240,
+        "y": 300,
+        "wires": [
+            [
+                "eb2bdb474e680296"
+            ]
+        ]
+    },
+    {
+        "id": "eb2bdb474e680296",
+        "type": "http request",
+        "z": "31005ffad19be55e",
+        "name": "Query",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": true,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 300,
+        "wires": [
+            [
+                "c532deee058dabab"
+            ]
+        ],
+        "icon": "font-awesome/fa-train"
+    },
+    {
+        "id": "c532deee058dabab",
+        "type": "function",
+        "z": "31005ffad19be55e",
+        "name": "Process",
+        "func": "let monitors = global.get(\"monitors\") || [];\n\nconst maxDepartures = 7\n\nconst monitorData = {};\nmonitors.forEach(name => {\n    const parts = name.split(\"_\")\n    if (parts.length !== 5) return\n    const [prefix1, prefix2, stopId, lineId, towards] = parts;\n    monitorData[`${stopId}_${lineId}`] = {\n        name: name,\n        towards: towards\n    }\n})\n\nfunction removeColonPrefix(input) {\n  const colonIndex = input.indexOf(':');\n  if (colonIndex === -1) return input; // no colon\n  const prefix = input.slice(0, colonIndex); // prefix before colon\n  const commaCount = (prefix.match(/,/g) || []).length;\n  if (prefix.length < 3 + 4 * commaCount) {\n    return input.slice(colonIndex + 1);\n  }\n  return input;\n}\n\nlet values = {}\nlet data = JSON.parse(msg.payload).data;\nlet trafficInfos = data.trafficInfos || []\ndata.monitors.forEach(monitor => {\n    let stopId = monitor.locationStop.properties.attributes.rbl;\n    monitor.lines.forEach(line =>{\n        let lineId = line.lineId\n        let key = `${stopId}_${lineId}`\n        if (key in monitorData){\n            const mData = monitorData[key]\n            let value = {\n                d: [],\n                r: [],\n            }\n            let infos = trafficInfos\n                .filter(i => i.relatedStops.includes(stopId)\n                    && i.relatedLines.includes(line.name))\n                .map(i => { return removeColonPrefix(i.title) })\n            \n            var texts = infos.slice(); // copy\n            let departures = line.departures.departure\n            for (var i = 0; i<maxDepartures; i++){\n                var m = []\n                if (i < departures.length){\n                    let departure = departures[i];\n                    let vehicle = departure.vehicle\n                    let countdown = departure.departureTime.countdown\n                    value.d[i] = countdown\n                    if (vehicle){\n                        value.r[i] = vehicle.realtimeSupported ? 1 : 0\n                        if (vehicle.trafficjam) m.push(\"Stau\")\n                        if (!vehicle.towards.toLowerCase().startsWith(mData.towards)) m.push(\"->\"+vehicle.towards)\n                    } else {\n                        value.r[i] = 0\n                    }\n                } else {\n                    value.d[i] = -1\n                    value.r[i] = 0\n                }\n                if (m.length > 0) texts.push(`${i+1}.${m.join(\", \")}`)\n            }\n            value.t = texts.join(\", \")\n            if (value.t.length > 180) value.t.substring(0,180) + \"...\"\n            values[mData.name] = value\n        }\n        \n    })\n});\n\nconst messages = monitors.map(monitor => {\n    const value = monitor in values ? values[monitor] : {d: [], r: [], t: \"\"}\n    return {\n        payload: {\n            \"entity_id\": monitor,\n            \"value\": JSON.stringify(value),\n        }\n    }\n})\nreturn [messages];",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 300,
+        "wires": [
+            [
+                "a668c0556ea65cba"
+            ]
+        ]
+    },
+    {
+        "id": "50bbb2f689f8236a",
+        "type": "link in",
+        "z": "31005ffad19be55e",
+        "name": "Request",
+        "links": [
+            "17814bc16fa231ca"
+        ],
+        "x": 100,
+        "y": 300,
+        "wires": [
+            [
+                "8940d8223070d0f3"
+            ]
+        ],
+        "l": true
+    },
+    {
+        "id": "17814bc16fa231ca",
+        "type": "link out",
+        "z": "31005ffad19be55e",
+        "name": "Request",
+        "mode": "link",
+        "links": [
+            "50bbb2f689f8236a"
+        ],
+        "x": 740,
+        "y": 160,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "dcd4f088564d5842",
+        "type": "link out",
+        "z": "31005ffad19be55e",
+        "name": "Clear",
+        "mode": "link",
+        "links": [
+            "60c71e9da07d6a32"
+        ],
+        "x": 730,
+        "y": 260,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "60c71e9da07d6a32",
+        "type": "link in",
+        "z": "31005ffad19be55e",
+        "name": "Clear",
+        "links": [
+            "dcd4f088564d5842"
+        ],
+        "x": 90,
+        "y": 360,
+        "wires": [
+            [
+                "ec3861c1147a3fcd"
+            ]
+        ],
+        "l": true
+    },
+    {
+        "id": "e89052ee77539c99",
+        "type": "link out",
+        "z": "31005ffad19be55e",
+        "name": "Watcher Changed",
+        "mode": "link",
+        "links": [
+            "ee650eeaa4077f8f"
+        ],
+        "x": 570,
+        "y": 120,
+        "wires": [],
+        "l": true
+    },
+    {
+        "id": "ee650eeaa4077f8f",
+        "type": "link in",
+        "z": "31005ffad19be55e",
+        "name": "Watcher Changed",
+        "links": [
+            "e89052ee77539c99"
+        ],
+        "x": 130,
+        "y": 200,
+        "wires": [
+            [
+                "9c22aa3e764d70fd"
+            ]
+        ],
+        "l": true
+    },
+    {
+        "id": "12fbb049fa51dd5b",
+        "type": "server",
+        "name": "Home Assistant",
+        "version": 5,
+        "addon": false,
+        "rejectUnauthorizedCerts": true,
+        "ha_boolean": "y|yes|true|on|home|open",
+        "connectionDelay": true,
+        "cacheJson": true,
+        "heartbeat": false,
+        "heartbeatInterval": 30,
+        "areaSelector": "friendlyName",
+        "deviceSelector": "friendlyName",
+        "entitySelector": "friendlyName",
+        "statusSeparator": ": ",
+        "statusYear": "hidden",
+        "statusMonth": "short",
+        "statusDay": "numeric",
+        "statusHourCycle": "default",
+        "statusTimeFormat": "h:m",
+        "enableGlobalContextStore": false
+    }
+]

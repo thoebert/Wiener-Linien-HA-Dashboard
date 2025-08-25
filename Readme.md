@@ -19,7 +19,6 @@ A minimalistic real-time public transport dashboard for Vienna's public transpor
 - **Intelligent data management** - Only fetches data when dashboard is visible and stop when no one is viewing
 - **Server-side processing** - All API calls and data processing happen on the server, ensuring maximum performance even on old upcycled tablets used for dashboard viewing
 - **Customizable styling** - Line-specific colors and theming
-- **Multiple departures** - Shows next two departure times
 - **Responsive design** - Works on desktop and mobile devices
 
 ## Components

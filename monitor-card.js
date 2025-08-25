@@ -66,7 +66,7 @@ class MonitorCard extends LitElement {
   getGridOptions() {
     return {
       rows: 1,
-      columns: 6,
+      columns: this._config.column_width || 6,
       min_columns: 6,
       min_rows: 1,
       max_rows: 1,

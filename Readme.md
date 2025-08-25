@@ -126,6 +126,7 @@ max_departures: 2
 | `color` | string | No | Background color for the line badge |
 | `publish_visibility` | boolean | No | Enable visibility tracking (set to `true` for exactly one card) |
 | `max_departures` | integer | No | Number of visible departure times (default: 2) |
+| `column_width` | integer | No | Width of the card in number of colums (default: 6) |
 
 ### Max Departure Limit
 

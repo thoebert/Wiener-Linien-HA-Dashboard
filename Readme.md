@@ -4,11 +4,12 @@ A minimalistic real-time public transport dashboard for Vienna's public transpor
 
 ## Screenshots
 
-### Light Theme
-![Light Theme Dashboard](Screenshot-UI-Light.png)
+## Screenshots
 
-### Dark Theme  
-![Dark Theme Dashboard](Screenshot-UI-Dark.png)
+<p float="left">
+<img src="Screenshot-UI-Light.png" width=49% height=49%/>
+<img src="Screenshot-UI-Dark.png" width=49% height=49%/>
+</p>
 
 ## Features
 
@@ -111,6 +112,7 @@ line: "5"
 color: "#c00a09"
 publish_visibility: true  # Required for at least one card to enable intelligent data fetching
 max_departures: 2
+column_width: 6
 ```
 
 ## Configuration Options

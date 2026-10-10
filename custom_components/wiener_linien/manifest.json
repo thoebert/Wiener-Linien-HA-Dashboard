@@ -1,0 +1,14 @@
+{
+  "domain": "wiener_linien",
+  "name": "Wiener Linien Departures",
+  "codeowners": ["@thoebert"],
+  "config_flow": true,
+  "dependencies": ["http", "frontend", "websocket_api"],
+  "documentation": "https://github.com/thoebert/Wiener-Linien-HA-Dashboard",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/thoebert/Wiener-Linien-HA-Dashboard/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "2.0.0"
+}

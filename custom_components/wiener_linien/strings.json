@@ -1,0 +1,99 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Wiener Linien",
+        "description": "Real-time departures for Vienna's public transport. Departure monitors are added afterwards via “Add departure monitor”. Data is only fetched while a dashboard card is visible."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Wiener Linien is already set up."
+    }
+  },
+  "config_subentries": {
+    "monitor": {
+      "initiate_flow": {
+        "user": "Add departure monitor"
+      },
+      "entry_type": "Departure monitor",
+      "step": {
+        "user": {
+          "title": "Add departure monitor",
+          "menu_options": {
+            "search": "Search by line and stop",
+            "manual": "Enter IDs manually"
+          }
+        },
+        "search": {
+          "title": "Line",
+          "description": "Choose the line.",
+          "data": {
+            "line": "Line"
+          }
+        },
+        "stop": {
+          "title": "Stop",
+          "description": "Choose the stop of line {line}.",
+          "data": {
+            "stop": "Stop"
+          }
+        },
+        "direction": {
+          "title": "Destination",
+          "description": "Which destination should be shown at {stop} (line {line})? The choice also selects the correct platform. Vehicles going somewhere else are highlighted.",
+          "data": {
+            "direction": "Destination"
+          }
+        },
+        "manual": {
+          "title": "Enter IDs manually",
+          "description": "Find IDs with the [mabe.at helper](https://till.mabe.at/rbl/). The stop ID is the RBL number. {lines}",
+          "data": {
+            "stop_id": "Stop ID (RBL)",
+            "line_id": "Line ID (optional)",
+            "towards": "Destination filter (optional)"
+          },
+          "data_description": {
+            "stop_id": "RBL number of the platform, e.g. 391.",
+            "line_id": "Numeric line id, e.g. 105 for line 5. Leave empty if only one line serves this stop.",
+            "towards": "Vehicles whose destination does not start with this text are highlighted. Leave empty to disable."
+          }
+        },
+        "reconfigure": {
+          "title": "Destination filter",
+          "data": {
+            "towards": "Destination filter (optional)"
+          },
+          "data_description": {
+            "towards": "Vehicles whose destination does not start with this text are highlighted. Leave empty to disable."
+          }
+        }
+      },
+      "error": {
+        "catalog_unavailable": "The open data lists could not be loaded. Enter the IDs manually.",
+        "stop_not_found": "No departures found for this stop ID.",
+        "line_not_found": "This line does not serve the stop. Found: {lines}",
+        "line_required": "Several lines serve this stop, please enter the line ID: {lines}",
+        "cannot_connect": "Could not reach the Wiener Linien API.",
+        "api_error": "The Wiener Linien API returned an error."
+      },
+      "abort": {
+        "already_configured": "This monitor already exists.",
+        "reconfigure_successful": "Monitor updated."
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update interval",
+        "data": {
+          "update_interval": "Update interval (seconds)"
+        },
+        "data_description": {
+          "update_interval": "How often the Wiener Linien API is queried while a dashboard card is visible. Minimum 15 s; the API allows about 10 requests per 30 s."
+        }
+      }
+    }
+  }
+}

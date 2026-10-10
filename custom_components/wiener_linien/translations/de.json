@@ -1,0 +1,99 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Wiener Linien",
+        "description": "Echtzeit-Abfahrten für die Wiener Öffis. Abfahrtsmonitore werden danach über „Abfahrtsmonitor hinzufügen“ angelegt. Daten werden nur geladen, solange eine Dashboard-Card sichtbar ist."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Wiener Linien ist bereits eingerichtet."
+    }
+  },
+  "config_subentries": {
+    "monitor": {
+      "initiate_flow": {
+        "user": "Abfahrtsmonitor hinzufügen"
+      },
+      "entry_type": "Abfahrtsmonitor",
+      "step": {
+        "user": {
+          "title": "Abfahrtsmonitor hinzufügen",
+          "menu_options": {
+            "search": "Nach Linie und Haltestelle suchen",
+            "manual": "IDs manuell eingeben"
+          }
+        },
+        "search": {
+          "title": "Linie",
+          "description": "Wähle die Linie.",
+          "data": {
+            "line": "Linie"
+          }
+        },
+        "stop": {
+          "title": "Haltestelle",
+          "description": "Wähle die Haltestelle der Linie {line}.",
+          "data": {
+            "stop": "Haltestelle"
+          }
+        },
+        "direction": {
+          "title": "Richtung",
+          "description": "Welches Ziel soll bei {stop} (Linie {line}) angezeigt werden? Die Auswahl bestimmt auch den richtigen Steig. Fahrzeuge mit anderem Ziel werden hervorgehoben.",
+          "data": {
+            "direction": "Ziel"
+          }
+        },
+        "manual": {
+          "title": "IDs manuell eingeben",
+          "description": "IDs findest du mit dem [mabe.at-Helper](https://till.mabe.at/rbl/). Die Stop-ID ist die RBL-Nummer. {lines}",
+          "data": {
+            "stop_id": "Stop-ID (RBL)",
+            "line_id": "Linien-ID (optional)",
+            "towards": "Ziel-Filter (optional)"
+          },
+          "data_description": {
+            "stop_id": "RBL-Nummer des Steigs, z. B. 391.",
+            "line_id": "Numerische Linien-ID, z. B. 105 für Linie 5. Leer lassen, wenn nur eine Linie hier hält.",
+            "towards": "Fahrzeuge, deren Ziel nicht mit diesem Text beginnt, werden hervorgehoben. Leer = aus."
+          }
+        },
+        "reconfigure": {
+          "title": "Ziel-Filter",
+          "data": {
+            "towards": "Ziel-Filter (optional)"
+          },
+          "data_description": {
+            "towards": "Fahrzeuge, deren Ziel nicht mit diesem Text beginnt, werden hervorgehoben. Leer = aus."
+          }
+        }
+      },
+      "error": {
+        "catalog_unavailable": "Die Open-Data-Listen konnten nicht geladen werden. Bitte IDs manuell eingeben.",
+        "stop_not_found": "Für diese Stop-ID wurden keine Abfahrten gefunden.",
+        "line_not_found": "Diese Linie hält hier nicht. Gefunden: {lines}",
+        "line_required": "Mehrere Linien halten hier, bitte Linien-ID angeben: {lines}",
+        "cannot_connect": "Wiener-Linien-API nicht erreichbar.",
+        "api_error": "Die Wiener-Linien-API hat einen Fehler gemeldet."
+      },
+      "abort": {
+        "already_configured": "Dieser Monitor existiert bereits.",
+        "reconfigure_successful": "Monitor aktualisiert."
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Aktualisierung",
+        "data": {
+          "update_interval": "Aktualisierungsintervall (Sekunden)"
+        },
+        "data_description": {
+          "update_interval": "Wie oft die Wiener-Linien-API abgefragt wird, solange eine Dashboard-Card sichtbar ist. Minimum 15 s; die API erlaubt etwa 10 Anfragen pro 30 s."
+        }
+      }
+    }
+  }
+}

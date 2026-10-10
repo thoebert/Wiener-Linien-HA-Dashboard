@@ -74,6 +74,10 @@ Clicking a card opens the details popup.
 - [Architecture](ARCHITECTURE.md): structure of the integration and design decisions
 - [Development](DEVELOPMENT.md): deployment, testing and development notes
 
+## License
+
+[MIT](LICENSE)
+
 ## Data source
 
 Real-time data and open data: Stadt Wien – data.wien.gv.at / Wiener Linien (CC BY 4.0). This project is not affiliated with Wiener Linien.

@@ -13,7 +13,7 @@ This document explains how the `wiener_linien` integration and its card work and
 │  - subscribeMessage(                │ subscr.│        │ who watches which sensor?           │
 │      "wiener_linien/subscribe")     │        │        ▼                                     │
 │  - details popup                    │        │  WienerLinienManager (poll loop)             │
-│                                     │ states │        │ 1 request for all watched stops     │
+│                                     │ states │        │ 1 request for all configured stops │
 │  reads hass.states[sensor] ◄────────┼────────┤        ▼                                     │
 └─────────────────────────────────────┘        │  api.py ──► wienerlinien.at/ogd_realtime     │
                                                │        │ parse                               │
@@ -83,7 +83,7 @@ Polling is **driven by viewers**:
 3. The hub pokes the **WienerLinienManager**, which runs a background task:
    - fetches immediately when a monitor appears that has not been fetched yet,
    - otherwise every `update_interval` seconds (≥ 15 s), with a lower bound of 5 s between two requests,
-   - collects *all* watched stops into **one** API request,
+   - collects *all* configured stops (as soon as any card is watching) into **one** API request,
    - after the last subscription is gone it keeps polling for a 60 s grace period (avoids flapping on page changes), then clears the data (sensors become `unknown`) and the task ends.
 4. After each fetch the manager signals the sensors via the dispatcher; each sensor writes its state.
 

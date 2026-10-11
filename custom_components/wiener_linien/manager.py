@@ -174,7 +174,9 @@ class WienerLinienManager:
                         pause = self._last_fetch + MIN_FETCH_SPACING - now
                         if pause > 0:
                             await asyncio.sleep(pause)
-                        await self._fetch(self._wanted())
+                        # Always fetch every monitor: cards are opened together,
+                        # and one request covers all stops anyway.
+                        await self._fetch(self.monitor_ids())
                         continue
                     timeout = due - now
                 else:

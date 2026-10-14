@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
-from homeassistant.util import dt as dt_util
+from homeassistant.util import dt as dt_util, slugify
 
 from . import WienerLinienConfigEntry
 from .const import (
@@ -72,6 +72,9 @@ class WienerLinienSensor(SensorEntity):
         self._manager = manager
         self._subentry = subentry
         self._attr_unique_id = subentry.subentry_id
+        # Common prefix so one recorder glob (`sensor.wl_*`) keeps all of them
+        # out of the database and the Activity tab. Only used on first creation.
+        self.entity_id = f"sensor.wl_{slugify(subentry.title)}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, subentry.subentry_id)},
             name=subentry.title,

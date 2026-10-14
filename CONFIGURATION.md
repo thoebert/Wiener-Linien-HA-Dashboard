@@ -134,3 +134,19 @@ column_width: 6           # optional, 6-12, default 6 (sections view)
 | `column_width` | integer | `6` | Width in grid columns, sections view |
 
 Place cards next to each other by giving them a width of `6` in a sections view (two per row) or make one span the full row with `12`.
+
+## Keep departures out of the recorder / Activity tab
+
+New monitors get entity IDs of the form `sensor.wl_<name>`. Their state (next
+departure time) changes constantly, so exclude them from the recorder (this also
+hides them from the Activity and History tabs):
+
+```yaml
+recorder:
+  exclude:
+    entity_globs:
+      - sensor.wl_*
+```
+
+Existing installs: rename old sensors to the `wl_` prefix once (entity IDs are
+only chosen on first creation) and update dashboards accordingly.
